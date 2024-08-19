@@ -139,18 +139,6 @@ const TodoScreen = () => {
       </TouchableOpacity>
       <FlatList data={todoList} renderItem={renderTodos} />
       {todoList.length <= 0 && <Home />}
-      <TouchableOpacity
-        style={styles.navButton}
-        onPress={() => navigation.navigate('Progress')}
-      >
-        <Text style={styles.navButtonText}>Go to Progress</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.navButton}
-        onPress={() => navigation.navigate('Done')}
-      >
-        <Text style={styles.navButtonText}>Go to Done</Text>
-      </TouchableOpacity>
     </View>
   );
 };
