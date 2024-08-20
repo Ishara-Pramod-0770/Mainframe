@@ -1,16 +1,19 @@
 import React, { useState, useContext } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import { TodoContext } from '../Contexts/TodoContext'; // Adjust path if needed
-import { Picker } from '@react-native-picker/picker';
 import { IconButton } from 'react-native-paper';
+import { Picker } from '@react-native-picker/picker';
+import { TodoContext } from '../Contexts/TodoContext'; // Adjust path if needed
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const DoneScreen = () => {
   const [todo, setTodo] = useState("");
   const [status, setStatus] = useState("done");
   const [updateTodo, setUpdateTodo] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dueDate, setDueDate] = useState(new Date());
   const { todoList, addTodo, updateTodo: updateTodoInContext, deleteTodo } = useContext(TodoContext);
 
-  //Add Done Task
+  // Add Done Task
   const handleAddTodo = () => {
     if (todo === "") return;
 
@@ -18,12 +21,14 @@ const DoneScreen = () => {
       id: Date.now().toString(),
       title: todo,
       status,
+      dueDate: dueDate.toISOString().split("T")[0],
     });
     setTodo("");
     setStatus("done");
+    setDueDate(new Date());
   };
 
-  //Delete Done Task
+  // Delete Done Task
   const handleDeleteTodo = (id) => {
     Alert.alert(
       "Confirm Delete",
@@ -39,26 +44,47 @@ const DoneScreen = () => {
     );
   };
 
-  //Update Done Task
+  // Update Done Task
   const handleUpdateTodo = () => {
-    updateTodoInContext({ ...updateTodo, title: todo, status });
+    updateTodoInContext({
+      ...updateTodo,
+      title: todo,
+      status,
+      dueDate: dueDate.toISOString().split("T")[0],
+    });
     setUpdateTodo(null);
     setTodo("");
     setStatus("done");
+    setDueDate(new Date());
   };
 
+  // Filter done todos
   const doneTodos = todoList.filter((item) => item.status === "done");
 
   const renderTodos = ({ item }) => (
     <View style={styles.todoItem}>
-      <Text style={styles.todoTitle}>{item.title}</Text>
-      <Text style={styles.todoStatus}>{item.status}</Text>
-      <IconButton icon="pencil" iconColor="#000" onPress={() => {
-        setUpdateTodo(item);
-        setTodo(item.title);
-        setStatus(item.status);
-      }} />
-      <IconButton icon="trash-can" iconColor="#000" onPress={() => handleDeleteTodo(item.id)} />
+      <View style={styles.todoDetails}>
+        <Text style={styles.todoTitle}>{item.title}</Text>
+        <Text style={styles.todoStatus}>Status: {item.status}</Text>
+        <Text style={styles.todoDueDate}>Due Date: {item.dueDate}</Text>
+      </View>
+      <View style={styles.todoActions}>
+        <IconButton
+          icon="pencil"
+          iconColor="#000"
+          onPress={() => {
+            setUpdateTodo(item);
+            setTodo(item.title);
+            setStatus(item.status);
+            setDueDate(new Date(item.dueDate));
+          }}
+        />
+        <IconButton
+          icon="trash-can"
+          iconColor="#000"
+          onPress={() => handleDeleteTodo(item.id)}
+        />
+      </View>
     </View>
   );
 
@@ -70,6 +96,27 @@ const DoneScreen = () => {
         value={todo}
         onChangeText={(userText) => setTodo(userText)}
       />
+      
+      {showDatePicker && (
+        <DateTimePicker
+          value={dueDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            const currentDate = selectedDate || dueDate;
+            setShowDatePicker(false);
+            setDueDate(currentDate);
+          }}
+        />
+      )}
+      <TouchableOpacity
+        style={styles.datePickerButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.datePickerText}>
+          {dueDate ? `Due Date: ${dueDate.toDateString()}` : "Select Due Date"}
+        </Text>
+      </TouchableOpacity>
       <Picker
         selectedValue={status}
         style={styles.picker}
@@ -87,12 +134,12 @@ const DoneScreen = () => {
       </TouchableOpacity>
 
       {doneTodos.length === 0 ? (
-        <Text style={styles.noTodoText}>No Available Done Task</Text>
+        <Text style={styles.noTodoText}>No Available Done Todo Task</Text>
       ) : (
-        <FlatList 
-          data={doneTodos} 
-          renderItem={renderTodos} 
-          keyExtractor={(item) => item.id} 
+        <FlatList
+          data={doneTodos}
+          renderItem={renderTodos}
+          keyExtractor={(item) => item.id}
         />
       )}
     </View>
@@ -101,9 +148,8 @@ const DoneScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 16,
     flex: 1,
-    justifyContent: 'flex-start',
+    marginHorizontal: 16,
   },
   input: {
     borderWidth: 2,
@@ -121,8 +167,21 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 20,
   },
+  datePickerText: {
+    color: "#000",
+    fontSize: 16,
+  },
+  datePickerButton: {
+    backgroundColor: "#fff",
+    borderRadius: 6,
+    paddingVertical: 12,
+    marginVertical: 20,
+    alignItems: "center",
+    borderColor: "#1e90ff",
+    borderWidth: 2,
+  },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "#000", // Green color for the button
     borderRadius: 6,
     paddingVertical: 12,
     marginVertical: 34,
@@ -134,9 +193,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   todoItem: {
-    backgroundColor: "#B7FFDC",
+    backgroundColor: "#B7FFDC", // Light green background for todo items
     borderRadius: 6,
-    paddingHorizontal: 6,
+    paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
     flexDirection: "row",
@@ -146,18 +205,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 3,
   },
+  todoDetails: {
+    flex: 1,
+  },
+  todoActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   todoTitle: {
     color: "#000",
     fontSize: 20,
     fontWeight: "800",
-    flex: 1,
-    marginLeft: 25,
   },
   todoStatus: {
     color: "#000",
     fontSize: 16,
-    flex: 1,
-    marginLeft: 25,
+    marginTop: 4,
+  },
+  todoDueDate: {
+    color: "#000",
+    fontSize: 14,
+    marginTop: 4,
   },
   noTodoText: {
     color: "#888",
