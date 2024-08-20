@@ -37,6 +37,10 @@ git clone https://github.com/Ishara-Pramod-0770/Mainframe.git
 cd react-native-todo-app
 npm install
 
+## Install Expo CLI globally
+
+npm install -g expo-cli
+
 ## Start the Metro Bundler
 
 npx react-native start
