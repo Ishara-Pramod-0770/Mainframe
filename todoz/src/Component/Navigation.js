@@ -1,4 +1,3 @@
-// src/components/Navigation.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,7 +15,7 @@ const Navigation = () => {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName;
-
+            //Navigation Bar and Icon
             if (route.name === 'Todo') {
               iconName = 'clipboard-list';
             } else if (route.name === 'Progress') {

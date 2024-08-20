@@ -10,6 +10,7 @@ const TodoScreen = () => {
   const [updateTodo, setUpdateTodo] = useState(null);
   const { todoList, addTodo, updateTodo: updateTodoInContext, deleteTodo } = useContext(TodoContext);
 
+  //Add Todo Task
   const handleAddTodo = () => {
     if (todo === "") return;
 
@@ -22,6 +23,7 @@ const TodoScreen = () => {
     setStatus("todo");
   };
 
+  //Delete Todo Task
   const handleDeleteTodo = (id) => {
     Alert.alert(
       "Confirm Delete",
@@ -37,6 +39,7 @@ const TodoScreen = () => {
     );
   };
 
+  //Update Todo Task
   const handleUpdateTodo = () => {
     updateTodoInContext({ ...updateTodo, title: todo, status });
     setUpdateTodo(null);

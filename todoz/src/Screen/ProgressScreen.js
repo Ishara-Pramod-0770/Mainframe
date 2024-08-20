@@ -10,6 +10,7 @@ const ProgressScreen = () => {
   const [updateTodo, setUpdateTodo] = useState(null);
   const { todoList, addTodo, updateTodo: updateTodoInContext, deleteTodo } = useContext(TodoContext);
 
+  //Add Progress Task
   const handleAddTodo = () => {
     if (todo === "") return;
 
@@ -22,6 +23,7 @@ const ProgressScreen = () => {
     setStatus("progress");
   };
 
+  //Delete Progress Task
   const handleDeleteTodo = (id) => {
     Alert.alert(
       "Confirm Delete",
@@ -37,6 +39,7 @@ const ProgressScreen = () => {
     );
   };
 
+  //Update Progress Task
   const handleUpdateTodo = () => {
     updateTodoInContext({ ...updateTodo, title: todo, status });
     setUpdateTodo(null);
