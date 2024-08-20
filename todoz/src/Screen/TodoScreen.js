@@ -1,63 +1,25 @@
-import React, { useState, useEffect } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert,
-} from "react-native";
-import { IconButton } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Picker } from '@react-native-picker/picker'; // Import Picker
-import { useNavigation } from '@react-navigation/native';
-import Home from "../Component/Home";
+import React, { useState, useContext } from 'react';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { IconButton } from 'react-native-paper';
+import { Picker } from '@react-native-picker/picker';
+import { TodoContext } from '../Contexts/TodoContext'; // Adjust path if needed
 
 const TodoScreen = () => {
   const [todo, setTodo] = useState("");
   const [status, setStatus] = useState("todo");
-  const [todoList, setTodoList] = useState([]);
   const [updateTodo, setUpdateTodo] = useState(null);
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    const loadTodos = async () => {
-      try {
-        const storedTodos = await AsyncStorage.getItem("todoList");
-        if (storedTodos) {
-          setTodoList(JSON.parse(storedTodos));
-        }
-      } catch (error) {
-        console.error("Failed to load todos", error);
-      }
-    };
-
-    loadTodos();
-  }, []);
-
-  const saveTodosToStorage = async (todos) => {
-    try {
-      await AsyncStorage.setItem("todoList", JSON.stringify(todos));
-    } catch (error) {
-      console.error("Failed to save todos", error);
-    }
-  };
+  const { todoList, addTodo, updateTodo: updateTodoInContext, deleteTodo } = useContext(TodoContext);
 
   const handleAddTodo = () => {
-    if (todo === "") {
-      return;
-    }
+    if (todo === "") return;
 
-    const newTodoList = [
-      ...todoList,
-      { id: Date.now().toString(), title: todo, status },
-    ];
-    setTodoList(newTodoList);
+    addTodo({
+      id: Date.now().toString(),
+      title: todo,
+      status,
+    });
     setTodo("");
     setStatus("todo");
-
-    saveTodosToStorage(newTodoList);
   };
 
   const handleDeleteTodo = (id) => {
@@ -65,51 +27,34 @@ const TodoScreen = () => {
       "Confirm Delete",
       "Are you sure you want to delete this todo?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
-          onPress: () => {
-            const updatedTodoList = todoList.filter((todo) => todo.id !== id);
-            setTodoList(updatedTodoList);
-
-            saveTodosToStorage(updatedTodoList);
-          },
+          onPress: () => deleteTodo(id),
           style: "destructive",
         },
       ]
     );
   };
 
-  const handleUpdateTodo = (todo) => {
-    setUpdateTodo(todo);
-    setTodo(todo.title);
-    setStatus(todo.status);
-  };
-
-  const handleSaveTodo = () => {
-    const updatedTodoList = todoList.map((item) => {
-      if (item.id === updateTodo.id) {
-        return { ...item, title: todo, status };
-      }
-      return item;
-    });
-
-    setTodoList(updatedTodoList);
+  const handleUpdateTodo = () => {
+    updateTodoInContext({ ...updateTodo, title: todo, status });
     setUpdateTodo(null);
     setTodo("");
     setStatus("todo");
-
-    saveTodosToStorage(updatedTodoList);
   };
+
+  const todoItems = todoList.filter((item) => item.status === "todo");
 
   const renderTodos = ({ item }) => (
     <View style={styles.todoItem}>
       <Text style={styles.todoTitle}>{item.title}</Text>
       <Text style={styles.todoStatus}>{item.status}</Text>
-      <IconButton icon="pencil" iconColor="#000" onPress={() => handleUpdateTodo(item)} />
+      <IconButton icon="pencil" iconColor="#000" onPress={() => {
+        setUpdateTodo(item);
+        setTodo(item.title);
+        setStatus(item.status);
+      }} />
       <IconButton icon="trash-can" iconColor="#000" onPress={() => handleDeleteTodo(item.id)} />
     </View>
   );
@@ -133,18 +78,27 @@ const TodoScreen = () => {
       </Picker>
       <TouchableOpacity
         style={styles.button}
-        onPress={updateTodo ? handleSaveTodo : handleAddTodo}
+        onPress={updateTodo ? handleUpdateTodo : handleAddTodo}
       >
         <Text style={styles.buttonText}>{updateTodo ? "Save" : "Add"}</Text>
       </TouchableOpacity>
-      <FlatList data={todoList} renderItem={renderTodos} />
-      {todoList.length <= 0 && <Home />}
+
+      {todoItems.length === 0 ? (
+        <Text style={styles.noTodoText}>No Available Todo Taks</Text>
+      ) : (
+        <FlatList 
+          data={todoItems} 
+          renderItem={renderTodos} 
+          keyExtractor={(item) => item.id} 
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     marginHorizontal: 16,
   },
   input: {
@@ -156,12 +110,12 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    marginTop: 50
+    marginTop: 50,
   },
   picker: {
     height: 50,
     width: '100%',
-    marginTop: 20
+    marginTop: 20,
   },
   button: {
     backgroundColor: "#000",
@@ -173,7 +127,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   todoItem: {
     backgroundColor: "#B7EEFF",
@@ -193,26 +147,20 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     flex: 1,
-    marginLeft: 25
+    marginLeft: 25,
   },
   todoStatus: {
     color: "#000",
     fontSize: 16,
     flex: 1,
-    marginLeft: 25
+    marginLeft: 25,
   },
-  navButton: {
-    backgroundColor: "#1e90ff",
-    borderRadius: 6,
-    paddingVertical: 12,
-    marginVertical: 10,
-    alignItems: "center",
+  noTodoText: {
+    color: "#888",
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
   },
-  navButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold"
-  }
 });
 
 export default TodoScreen;
