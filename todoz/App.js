@@ -7,7 +7,7 @@ const App = () => {
     <TodoProvider>
       <Navigation />
     </TodoProvider>
-  )
+  );
 };
 
 export default App;
