@@ -34,8 +34,10 @@ git clone https://github.com/Ishara-Pramod-0770/Mainframe.git
 
 ## Install Dependencies
 
+```
 cd react-native-todo-app
 npm install
+```
 
 ## Install Expo CLI globally
 
