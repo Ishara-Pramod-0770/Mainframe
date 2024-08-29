@@ -27,6 +27,7 @@ This is a simple Todo App built using React Native. The app allows users to add,
   
   ```bash
   npm install -g react-native-cli
+  ```
 
 ## Clone the Repository
 
@@ -40,13 +41,16 @@ npm install
 ```
 
 ## Install Expo CLI globally
-
+```
 npm install -g expo-cli
+```
 
 ## Start the Metro Bundler
-
+```
 npx react-native start
+```
 
 ## Run the App
-
+```
 npx react-native run-android
+```
