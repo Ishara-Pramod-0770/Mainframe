@@ -30,8 +30,9 @@ This is a simple Todo App built using React Native. The app allows users to add,
   ```
 
 ## Clone the Repository
-
+```
 git clone https://github.com/Ishara-Pramod-0770/Mainframe.git
+```
 
 ## Install Dependencies
 
